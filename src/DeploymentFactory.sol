@@ -10,7 +10,6 @@ import {Predeploys} from "optimism-contracts/src/libraries/Predeploys.sol";
  * This contract uses the Optimism L2-to-L2 cross-domain messenger for cross-chain communication.
  * @notice
  */
-
 contract DeploymentFactory {
     // Errors
     error CallerNotL2ToL2CrossDomainMessenger();
@@ -37,10 +36,12 @@ contract DeploymentFactory {
      * Ensures that the caller is the messenger and the sender is valid
      */
     modifier onlyCrossDomainCallback() {
-        if (msg.sender != address(messenger))
+        if (msg.sender != address(messenger)) {
             revert CallerNotL2ToL2CrossDomainMessenger();
-        if (messenger.crossDomainMessageSender() != address(this))
+        }
+        if (messenger.crossDomainMessageSender() != address(this)) {
             revert InvalidCrossDomainSender();
+        }
         _;
     }
 
@@ -68,7 +69,7 @@ contract DeploymentFactory {
         emit ContractDeployed(deployedAddr, block.chainid);
 
         // Step 2: Send cross-chain messages to each target chain.
-        for (uint i = 0; i < chainIds.length; i++) {
+        for (uint256 i = 0; i < chainIds.length; i++) {
             bytes memory message = abi.encodeCall(
                 this.deploy,
                 (bytecode, salt)
