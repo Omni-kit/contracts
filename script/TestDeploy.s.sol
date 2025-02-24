@@ -22,7 +22,7 @@ contract DeployAndVerifyTestToken is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         // Configure two chains: 901 and 902.
-        
+
         chains.push(ChainConfig(901, "http://127.0.0.1:9545")); // OPChainA
         chains.push(ChainConfig(902, "http://127.0.0.1:9546")); // OPChainB
 
@@ -31,7 +31,8 @@ contract DeployAndVerifyTestToken is Script {
         fork902 = vm.createFork(chains[1].rpcUrl);
 
         // The factory is already deployed at the same address on both chains.
-        factoryAddress = 0x6F4A341ca76DC55B67F547b7BD70d6C76FbeD753; //change after deployment
+        //change after deployment
+        factoryAddress = 0x6F4A341ca76DC55B67F547b7BD70d6C76FbeD753;
         DeploymentFactory factory = DeploymentFactory(factoryAddress);
 
         // --- Deploy TestToken via the factory from chain 901 ---
