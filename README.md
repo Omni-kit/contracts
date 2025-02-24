@@ -38,7 +38,7 @@ To test the deployment and test deployment scripts, follow these steps. This ass
      ```bash
      forge script script/DeployFactory.s.sol --broadcast
      ```
-   - Add `<PRIVATE_KEY>` with a valid private key.
+   - Add `<PRIVATE_KEY>` with a valid private key in .env file in root directory.
    - After execution, note the deployed `DeploymentFactory` address printed in the console (e.g., `0x1234...`).
 
 4. **Update and Run the Test Deployment Script**:
