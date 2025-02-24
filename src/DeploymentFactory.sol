@@ -70,6 +70,7 @@ contract DeploymentFactory {
 
         // Step 2: Send cross-chain messages to each target chain.
         for (uint256 i = 0; i < chainIds.length; i++) {
+            if (block.chainid == chainIds[i]) continue;
             bytes memory message = abi.encodeCall(
                 this.deploy,
                 (bytecode, salt)
