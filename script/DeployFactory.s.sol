@@ -49,3 +49,4 @@ contract DeployFactory is Script {
         console.log("Factory on OPChainB:", factoryAddresses[1]);
     }
 }
+//0x6F4A341ca76DC55B67F547b7BD70d6C76FbeD753

@@ -13,26 +13,46 @@ struct ChainConfig {
 }
 
 contract DeployAndVerifyTestToken is Script {
-    ChainConfig[] public chains;
-    uint256 fork901;
-    uint256 fork902;
-    address factoryAddress;
+    /// @notice Computes the CREATE2 deployed address.
+    /// @param factory The deploying (factory) contract address.
+    /// @param salt The salt used for CREATE2.
+    /// @param bytecodeHash The keccak256 hash of the creation bytecode.
+    function computeCreate2Address(
+        address factory,
+        bytes32 salt,
+        bytes32 bytecodeHash
+    ) public pure returns (address) {
+        return
+            address(
+                uint160(
+                    uint256(
+                        keccak256(
+                            abi.encodePacked(
+                                hex"ff",
+                                factory,
+                                salt,
+                                bytecodeHash
+                            )
+                        )
+                    )
+                )
+            );
+    }
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         // Configure two chains: 901 and 902.
-
-        chains.push(ChainConfig(901, "http://127.0.0.1:9545")); // OPChainA
-        chains.push(ChainConfig(902, "http://127.0.0.1:9546")); // OPChainB
+        ChainConfig[] memory chains = new ChainConfig[](2);
+        chains[0] = ChainConfig(901, "http://127.0.0.1:9545"); // Chain 901
+        chains[1] = ChainConfig(902, "http://127.0.0.1:9546"); // Chain 902
 
         // Create persistent forks for both chains.
-        fork901 = vm.createFork(chains[0].rpcUrl);
-        fork902 = vm.createFork(chains[1].rpcUrl);
+        uint256 fork901 = vm.createFork(chains[0].rpcUrl);
+        // uint256 fork902 = vm.createFork(chains[1].rpcUrl);
 
         // The factory is already deployed at the same address on both chains.
-        //change after deployment
-        factoryAddress = 0x6F4A341ca76DC55B67F547b7BD70d6C76FbeD753;
+        address factoryAddress = 0x6F4A341ca76DC55B67F547b7BD70d6C76FbeD753;
         DeploymentFactory factory = DeploymentFactory(factoryAddress);
 
         // --- Deploy TestToken via the factory from chain 901 ---
@@ -60,66 +80,13 @@ contract DeployAndVerifyTestToken is Script {
             tokenBytecodeHash
         );
         console.log("TestToken deployed at:", tokenAddress);
-    }
 
-    function TestDeployedToken() external {
-        // Known TestToken contract address on both chains.
-        address testTokenAddress = 0x700b6A60ce7EaaEA56F065753d8dcB9653dbAD35;
-
-        // --- Verify on Chain 901 ---
+        // --- Verify the deployment on Chain 901 ---
         vm.selectFork(fork901);
-
-        TestToken token901 = TestToken(testTokenAddress);
-
-        uint256 totalSupply901 = token901.totalSupply();
-        string memory name901 = token901.name();
-        string memory symbol901 = token901.symbol();
-
-        console.log("Chain 901 - TestToken Verification:");
-        console.log("Address:", testTokenAddress);
-        console.log("Name:", name901);
-        console.log("Symbol:", symbol901);
-        console.log("Total Supply:", totalSupply901);
-
-        // --- Verify on Chain 902 ---
-        vm.selectFork(fork902);
-
-        TestToken token902 = TestToken(testTokenAddress);
-
-        uint256 totalSupply902 = token902.totalSupply();
-        string memory name902 = token902.name();
-        string memory symbol902 = token902.symbol();
-
-        console.log("Chain 902 - TestToken Verification:");
-        console.log("Address:", testTokenAddress);
-        console.log("Name:", name902);
-        console.log("Symbol:", symbol902);
-        console.log("Total Supply:", totalSupply902);
-    }
-
-    /// @notice Computes the CREATE2 deployed address.
-    /// @param factory The deploying (factory) contract address.
-    /// @param salt The salt used for CREATE2.
-    /// @param bytecodeHash The keccak256 hash of the creation bytecode.
-    function computeCreate2Address(
-        address factory,
-        bytes32 salt,
-        bytes32 bytecodeHash
-    ) public pure returns (address) {
-        return
-            address(
-                uint160(
-                    uint256(
-                        keccak256(
-                            abi.encodePacked(
-                                hex"ff",
-                                factory,
-                                salt,
-                                bytecodeHash
-                            )
-                        )
-                    )
-                )
-            );
+        TestToken token901 = TestToken(tokenAddress);
+        uint256 supply901 = token901.totalSupply();
+        uint256 factoryBalance901 = token901.balanceOf(factoryAddress);
+        console.log("Chain 901 TestToken totalSupply:", supply901);
+        console.log("Chain 901 Factory Token Balance:", factoryBalance901);
     }
 }

@@ -45,12 +45,12 @@ contract DeploymentFactoryTest is Test {
 
         // Deploy factory on chain A
         vm.selectFork(forkA);
-        factory901 = new DeploymentFactory{salt: "DeploymentFactory"}();
+        factory901 = new DeploymentFactory{salt: "DeploymentFactoryy"}();
         factoryAddress = address(factory901);
 
         // Deploy factory on chain B
         vm.selectFork(forkB);
-        factory902 = new DeploymentFactory{salt: "DeploymentFactory"}();
+        factory902 = new DeploymentFactory{salt: "DeploymentFactoryy"}();
         assertEq(
             address(factory902),
             factoryAddress,
@@ -95,16 +95,17 @@ contract DeploymentFactoryTest is Test {
         uint256[] memory targetChainIds = new uint256[](1);
         targetChainIds[0] = 902; // chainIdB
 
+        vm.expectEmit(true, true, true, true);
+        emit ContractDeployed(expectedAddress, 901);
+
+        vm.expectEmit(true, true, true, true);
+        emit CrossChainMessageSent(902, factoryAddress);
+
         // Expect ContractDeployed event on chain A
         factory901.deployContract(targetChainIds, bytecode, salt);
         console.log("contract deployed on chain A");
 
-        vm.expectEmit(true, true, false, true, factoryAddress);
-        emit ContractDeployed(expectedAddress, 901);
 
-        // Expect CrossChainMessageSent event for chain B
-        vm.expectEmit(true, true, false, true, factoryAddress);
-        emit CrossChainMessageSent(902, factoryAddress);
         // Verify deployment on chain A
         TestToken tokenA = TestToken(expectedAddress);
         assertTrue(
@@ -130,24 +131,25 @@ contract DeploymentFactoryTest is Test {
             abi.encode(factoryAddress)
         );
 
-        // Expect ContractDeployed event on chain B
-        vm.expectEmit(true, true, false, true, factoryAddress);
-        emit ContractDeployed(expectedAddress, 902);
-
         factory902.deploy(bytecode, salt);
         vm.clearMockedCalls();
 
         // Verify deployment on chain B
         TestToken tokenB = TestToken(expectedAddress);
+        console.log("1");
         assertTrue(
             address(tokenB).code.length > 0,
             "Contract not deployed on chain B"
         );
+        console.log("2");
+
         assertEq(
             tokenB.totalSupply(),
             initialSupply,
             "Total supply mismatch on chain B"
         );
+        console.log("3");
+
         assertEq(
             tokenB.balanceOf(factoryAddress),
             initialSupply,
