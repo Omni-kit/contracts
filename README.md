@@ -23,7 +23,7 @@ To test the deployment and test deployment scripts, follow these steps. This ass
 1. **Start Supersim with Auto-Relay**:
    - In one terminal, navigate to your Supersim directory and start it with the auto-relay feature to simulate multiple Superchains (e.g., chain IDs 901 and 902):
      ```bash
-     supersim --auto-relay
+     supersim --interop.autorelay
      ```
    - This sets up local RPC endpoints like `http://127.0.0.1:9545` (chain 901) and `http://127.0.0.1:9546` (chain 902).
 
