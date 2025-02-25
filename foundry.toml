@@ -4,6 +4,4 @@ out = "out"
 libs = ["lib"]
 evm_version = "cancun"
 
-remappings = ["optimism-contracts/=lib/optimism/packages/contracts-bedrock/"]
-
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
