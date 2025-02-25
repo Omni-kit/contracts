@@ -136,19 +136,17 @@ contract DeploymentFactoryTest is Test {
 
         // Verify deployment on chain B
         TestToken tokenB = TestToken(expectedAddress);
-        console.log("1");
+        
         assertTrue(
             address(tokenB).code.length > 0,
             "Contract not deployed on chain B"
         );
-        console.log("2");
 
         assertEq(
             tokenB.totalSupply(),
             initialSupply,
             "Total supply mismatch on chain B"
         );
-        console.log("3");
 
         assertEq(
             tokenB.balanceOf(factoryAddress),
