@@ -3,9 +3,16 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "../src/DeploymentFactory.sol";
-import "../src/example/TestToken.sol";
 import {IL2ToL2CrossDomainMessenger} from "optimism-contracts/interfaces/L2/IL2ToL2CrossDomainMessenger.sol";
 import {Predeploys} from "optimism-contracts/src/libraries/Predeploys.sol";
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract TestToken is ERC20 {
+    constructor() ERC20("TestToken", "TTK") {
+        _mint(msg.sender, 1_000_000 * 10 ** decimals());
+    }
+}
 
 /**
  * @title DeploymentFactoryTest
@@ -105,7 +112,6 @@ contract DeploymentFactoryTest is Test {
         factory901.deployContract(targetChainIds, bytecode, salt);
         console.log("contract deployed on chain A");
 
-
         // Verify deployment on chain A
         TestToken tokenA = TestToken(expectedAddress);
         assertTrue(
@@ -136,7 +142,7 @@ contract DeploymentFactoryTest is Test {
 
         // Verify deployment on chain B
         TestToken tokenB = TestToken(expectedAddress);
-        
+
         assertTrue(
             address(tokenB).code.length > 0,
             "Contract not deployed on chain B"

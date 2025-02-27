@@ -5,22 +5,14 @@ import {IL2ToL2CrossDomainMessenger} from "optimism-contracts/interfaces/L2/IL2T
 import {ISuperchainERC20} from "optimism-contracts/interfaces/L2/ISuperchainERC20.sol";
 import {ISuperchainWETH} from "optimism-contracts/interfaces/L2/ISuperchainWETH.sol";
 import {ISuperchainTokenBridge} from "optimism-contracts/interfaces/L2/ISuperchainTokenBridge.sol";
-
-import {Predeploys} from "optimism-contracts/src/libraries/Predeploys.sol";
-
-// Custom error definitions for better gas efficiency
-error CallerNotL2ToL2CrossDomainMessenger();
-error InvalidCrossDomainSender();
-error TransferFailed();
-error InvalidArrayLength();
+import {Common} from "./Common.sol";
 
 library CrossChainUtils {
+    using Common for *;
+
     // Immutable reference to the L2 CrossDomainMessenger
     IL2ToL2CrossDomainMessenger internal constant messenger =
-        IL2ToL2CrossDomainMessenger(Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
-
-    // Events
-    event StateSynced(uint256 indexed chainId, bytes encodedCall);
+        IL2ToL2CrossDomainMessenger(Common.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
 
     /**
      * @notice Sends a cross-chain message to deploy or interact with a contract on another chain.
@@ -39,7 +31,7 @@ library CrossChainUtils {
      * @param _amount The amount of ETH to wrap.
      */
     function wrapETH(uint256 _amount) internal {
-        ISuperchainWETH(payable(Predeploys.SUPERCHAIN_WETH)).deposit{
+        ISuperchainWETH(payable(Common.SUPERCHAIN_WETH)).deposit{
             value: _amount
         }();
     }
@@ -57,7 +49,7 @@ library CrossChainUtils {
         uint256 _amount,
         uint256 _toChainId
     ) internal {
-        ISuperchainTokenBridge(Predeploys.SUPERCHAIN_TOKEN_BRIDGE).sendERC20(
+        ISuperchainTokenBridge(Common.SUPERCHAIN_TOKEN_BRIDGE).sendERC20(
             _token,
             _to,
             _amount,
@@ -111,49 +103,26 @@ library CrossChainUtils {
         address[] memory _recipients,
         uint256[] memory _amounts
     ) internal {
-        if (_recipients.length != _amounts.length) revert InvalidArrayLength();
+        if (_recipients.length != _amounts.length)
+            revert Common.InvalidArrayLength();
         for (uint256 i = 0; i < _recipients.length; i++) {
             bool success = ISuperchainERC20(_token).transfer(
                 _recipients[i],
                 _amounts[i]
             );
-            if (!success) revert TransferFailed();
+            if (!success) revert Common.TransferFailed();
         }
     }
 
     /**
-     * @dev Syncs state across multiple chains using Optimism's interop contracts.
-     * @param encodedCall The encoded function call to sync.
-     * @param chainIds The list of chain IDs to sync the state to.
+     * @notice Function to ensure the caller is the L2ToL2CrossDomainMessenger and the sender is valid.
      */
-    function syncStates(
-        bytes memory encodedCall,
-        uint256[] memory chainIds
-    ) internal {
-        require(
-            chainIds.length > 0,
-            "CrossChainStateSync: No chain IDs provided"
-        );
-        require(
-            encodedCall.length > 0,
-            "CrossChainStateSync: Empty encoded call"
-        );
-
-        uint256 length = chainIds.length;
-        for (uint256 i = 0; i < length; i++) {
-            messenger.sendMessage(chainIds[i], address(this), encodedCall);
-            emit StateSynced(chainIds[i], encodedCall);
+    function validateCrossDomainCallback() internal view {
+        if (msg.sender != address(messenger)) {
+            revert Common.CallerNotL2ToL2CrossDomainMessenger();
         }
-    }
-
-    /**
-     * @notice Modifier to ensure the caller is the L2ToL2CrossDomainMessenger and the sender is valid.
-     */
-    modifier onlyCrossDomainCallback() {
-        if (msg.sender != address(messenger))
-            revert CallerNotL2ToL2CrossDomainMessenger();
-        if (messenger.crossDomainMessageSender() != address(this))
-            revert InvalidCrossDomainSender();
-        _;
+        if (messenger.crossDomainMessageSender() != address(this)) {
+            revert Common.InvalidCrossDomainSender();
+        }
     }
 }

@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 import {IL2ToL2CrossDomainMessenger} from "optimism-contracts/interfaces/L2/IL2ToL2CrossDomainMessenger.sol";
-import {Predeploys} from "optimism-contracts/src/libraries/Predeploys.sol";
+import {CrossChainUtils} from "./library/CrossChainUtils.sol";
+import {Common} from "./library/Common.sol";
 
 /**
  * @title DeploymentFactory
@@ -11,9 +12,8 @@ import {Predeploys} from "optimism-contracts/src/libraries/Predeploys.sol";
  * @notice
  */
 contract DeploymentFactory {
-    // Errors
-    error CallerNotL2ToL2CrossDomainMessenger();
-    error InvalidCrossDomainSender();
+    using CrossChainUtils for *;
+    using Common for *;
 
     // Immutable reference to the L2 CrossDomainMessenger
     IL2ToL2CrossDomainMessenger internal immutable messenger;
@@ -31,23 +31,9 @@ contract DeploymentFactory {
         address indexed targetFactory
     );
 
-    /**
-     * @dev Modifier to restrict access to only the L2ToL2CrossDomainMessenger.
-     * Ensures that the caller is the messenger and the sender is valid
-     */
-    modifier onlyCrossDomainCallback() {
-        if (msg.sender != address(messenger)) {
-            revert CallerNotL2ToL2CrossDomainMessenger();
-        }
-        if (messenger.crossDomainMessageSender() != address(this)) {
-            revert InvalidCrossDomainSender();
-        }
-        _;
-    }
-
     constructor() {
         messenger = IL2ToL2CrossDomainMessenger(
-            Predeploys.L2_TO_L2_CROSS_DOMAIN_MESSENGER
+            Common.L2_TO_L2_CROSS_DOMAIN_MESSENGER
         );
         owner = msg.sender;
     }
@@ -85,10 +71,8 @@ contract DeploymentFactory {
      * @param bytecode The creation bytecode of the contract to deploy.
      * @param salt A unique salt for deterministic deployment (CREATE2).
      */
-    function deploy(
-        bytes memory bytecode,
-        bytes32 salt
-    ) external onlyCrossDomainCallback {
+    function deploy(bytes memory bytecode, bytes32 salt) external {
+        CrossChainUtils.validateCrossDomainCallback();
         _deploy(bytecode, salt);
     }
 

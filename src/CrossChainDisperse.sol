@@ -4,13 +4,11 @@ pragma solidity ^0.8.0;
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ISuperchainERC20} from "optimism-contracts/interfaces/L2/ISuperchainERC20.sol";
 import {CrossChainUtils} from "./library/CrossChainUtils.sol";
-
-error InvalidArrayLength();
-error CallerNotL2ToL2CrossDomainMessenger();
-error InvalidCrossDomainSender();
+import {Common} from "./library/Common.sol";
 
 contract CrossChainTokenTransfer is ReentrancyGuard {
     using CrossChainUtils for *;
+    using Common for *;
 
     struct ChainTransfer {
         uint256 chainId;
@@ -35,39 +33,25 @@ contract CrossChainTokenTransfer is ReentrancyGuard {
     ) external nonReentrant {
         require(recipients.length == amounts.length, "Array length mismatch");
 
-        if (chainId == block.chainid) {
-            // Local transfers on the current chain
-            uint256 totalAmount = 0;
-            for (uint256 i = 0; i < amounts.length; i++) {
-                totalAmount += amounts[i];
-            }
-            require(
-                ISuperchainERC20(token).transferFrom(
-                    msg.sender,
-                    address(this),
-                    totalAmount
-                ),
-                "TransferFrom failed"
-            );
+        uint256 totalAmount = amounts.calculateTotal();
+        require(
+            ISuperchainERC20(token).transferFrom(
+                msg.sender,
+                address(this),
+                totalAmount
+            ),
+            "TransferFrom failed"
+        );
 
+        if (chainId == block.chainid) {
             CrossChainUtils.disperseTokens(token, recipients, amounts);
         } else {
-            // Cross-chain transfer to a single different chain
-            uint256 totalAmount = 0;
-            for (uint256 i = 0; i < amounts.length; i++) {
-                totalAmount += amounts[i];
-            }
-            require(
-                ISuperchainERC20(token).transferFrom(
-                    msg.sender,
-                    address(this),
-                    totalAmount
-                ),
-                "TransferFrom failed"
+            CrossChainUtils.sendERC20ViaBridge(
+                token,
+                address(this),
+                totalAmount,
+                chainId
             );
-
-            token.sendERC20ViaBridge(address(this), totalAmount, chainId);
-
             bytes memory message = abi.encodeCall(
                 this.receiveERC20Tokens,
                 (token, recipients, amounts)
@@ -86,26 +70,19 @@ contract CrossChainTokenTransfer is ReentrancyGuard {
         address token,
         address[] memory recipients,
         uint256[] memory amounts
-    ) external onlyCrossDomainCallback {
-        if (recipients.length != amounts.length) revert InvalidArrayLength();
+    ) external {
+        CrossChainUtils.validateCrossDomainCallback();
+
+        if (recipients.length != amounts.length)
+            revert Common.InvalidArrayLength();
 
         uint256 totalAmount = amounts.calculateTotal();
-        token.disperseTokens(recipients, amounts);
+        CrossChainUtils.disperseTokens(token, recipients, amounts);
 
         emit TokensReceived(
             CrossChainUtils.messenger.crossDomainMessageSource(),
             block.chainid,
             totalAmount
         );
-    }
-
-    modifier onlyCrossDomainCallback() {
-        if (msg.sender != address(CrossChainUtils.messenger))
-            revert CallerNotL2ToL2CrossDomainMessenger();
-        if (
-            CrossChainUtils.messenger.crossDomainMessageSender() !=
-            address(this)
-        ) revert InvalidCrossDomainSender();
-        _;
     }
 }
