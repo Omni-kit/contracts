@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import {IL2ToL2CrossDomainMessenger} from "optimism-contracts/interfaces/L2/IL2ToL2CrossDomainMessenger.sol";
-import {Common} from "./library/Common.sol";
+import {Common} from "./libraries/Common.sol";
 
 contract CrossChainStateSync {
     using Common for *;
