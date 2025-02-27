@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ISuperchainERC20} from "optimism-contracts/interfaces/L2/ISuperchainERC20.sol";
-import {CrossChainUtils} from "./library/CrossChainUtils.sol";
-import {Common} from "./library/Common.sol";
+import {CrossChainUtils} from "./libraries/CrossChainUtils.sol";
+import {Common} from "./libraries/Common.sol";
+
 
 contract CrossChainTokenTransfer is ReentrancyGuard {
     using CrossChainUtils for *;

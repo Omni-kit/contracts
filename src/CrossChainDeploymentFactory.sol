@@ -2,8 +2,10 @@
 pragma solidity ^0.8.0;
 
 import {IL2ToL2CrossDomainMessenger} from "optimism-contracts/interfaces/L2/IL2ToL2CrossDomainMessenger.sol";
-import {CrossChainUtils} from "./library/CrossChainUtils.sol";
-import {Common} from "./library/Common.sol";
+
+import {CrossChainUtils} from "./libraries/CrossChainUtils.sol";
+import {Common} from "./libraries/Common.sol";
+import "solady/src/utils/CREATE3.sol"; 
 
 /**
  * @title CrossChainDeploymentFactory
@@ -14,6 +16,7 @@ import {Common} from "./library/Common.sol";
 contract CrossChainDeploymentFactory {
     using CrossChainUtils for *;
     using Common for *;
+    using CREATE3 for bytes32;
 
     // Immutable reference to the L2 CrossDomainMessenger
     IL2ToL2CrossDomainMessenger internal immutable messenger;
@@ -64,6 +67,48 @@ contract CrossChainDeploymentFactory {
             messenger.sendMessage(chainIds[i], address(this), message);
             emit CrossChainMessageSent(chainIds[i], address(this));
         }
+    }
+
+    /**
+     * @dev Deploys a Hub contract on the current chain and Spoke contracts on specified chains, all at the same address using CREATE3.
+     * @param hubBytecode The creation bytecode of the Hub(primary chain) contract.
+     * @param spokeBytecode The creation bytecode of the Spoke(secondary chains) contracts.
+     * @param salt A unique salt for deterministic deployment (CREATE3).
+     * @param spokeChainIds Array of chain IDs on which to deploy the spoke contracts.
+     * @return hubAddr The address of the deployed hub contract.
+     */
+    function deployHubAndSpokes(
+        bytes memory hubBytecode,
+        bytes memory spokeBytecode,
+        bytes32 salt,
+        uint256[] calldata spokeChainIds
+    ) external returns (address hubAddr) {
+        // Deploy the hub on the current chain using CREATE3
+        hubAddr = salt.deploy(hubBytecode, 0);
+        emit ContractDeployed(hubAddr, block.chainid);
+
+        // Send cross-chain messages to deploy spokes on other chains
+        for (uint256 i = 0; i < spokeChainIds.length; i++) {
+            uint256 chainId = spokeChainIds[i];
+            if (chainId == block.chainid) continue; // Skip current chain
+            bytes memory message = abi.encodeCall(
+                this.deployWithCREATE3,
+                (spokeBytecode, salt)
+            );
+            messenger.sendMessage(chainId, address(this), message);
+            emit CrossChainMessageSent(chainId, address(this));
+        }
+    }
+
+    /**
+     * @dev Deploys a contract on the current chain when triggered by a cross-chain message using CREATE3.
+     * @param bytecode The creation bytecode of the contract to deploy.
+     * @param salt A unique salt for deterministic deployment (CREATE3).
+     */
+    function deployWithCREATE3(bytes memory bytecode, bytes32 salt) external {
+        CrossChainUtils.validateCrossDomainCallback();
+        address deployed = salt.deploy(bytecode, 0);
+        emit ContractDeployed(deployed, block.chainid);
     }
 
     /**
