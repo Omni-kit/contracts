@@ -172,6 +172,10 @@ syncStates(encodedCall, targetChainIds);
 3. **Sync contract state across chains** using `CrossChainStateSync`.
 4. **Utilize the `CrossChainUtils` library** in your custom smart contracts to enable comprehensive cross-chain functionality.
 
+---
+
+## **📌 Getting Started**  
+
 ### 🛠 **Setup in Foundry**
 
 Follow these steps to set up **Omnikit** in your Foundry project.
