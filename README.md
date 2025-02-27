@@ -172,23 +172,37 @@ syncStates(encodedCall, targetChainIds);
 3. **Sync contract state across chains** using `CrossChainStateSync`.
 4. **Utilize the `CrossChainUtils` library** in your custom smart contracts to enable comprehensive cross-chain functionality.
 
-### **🔧 Setup in Foundry**
+### 🛠 **Setup in Foundry**
 
-1. **Install Omnikit**
-   ```sh
-   forge install Omni-kit/omnikit
-   ```
-2. **Update `foundry.toml`**  
-    Add the following lines to your `foundry.toml` file:
+Follow these steps to set up **Omnikit** in your Foundry project.
 
-   ```toml
-   evm_version = "cancun"
+#### **1️⃣ Install Omnikit**
 
-   remappings = ["omnikit/=lib/omnikit/src/", "solady/=lib/solady/src/"]
-   ```
+Run the following command in your project directory:
 
-   This ensures correct compilation and remappings for Omnikit dependencies.
+```sh
+forge install Omni-kit/omnikit
+```
 
-## Want to See More Examples?
+#### **2️⃣ Update `foundry.toml`**
 
-Curious to see how this package works in action? We've put together detailed examples to help you get started quickly. Check them out here: **[Example Repository](https://github.com/Omni-kit/omnikit-examples)** 🚀
+Add these lines to your `foundry.toml` file:
+
+```toml
+evm_version = "cancun"
+
+remappings = [
+    "omnikit/=lib/omnikit/src/",
+    "solady/=lib/solady/src/"
+]
+```
+
+This ensures correct **compilation** and **remappings** for Omnikit dependencies.
+
+---
+
+### 🔗 **Want to See More Examples?**
+
+Check out our **detailed examples** to help you get started quickly! 🚀
+
+👉 **[Example Repository](https://github.com/Omni-kit/omnikit-examples)**
