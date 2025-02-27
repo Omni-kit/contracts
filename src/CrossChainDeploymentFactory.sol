@@ -11,7 +11,7 @@ import {Common} from "./library/Common.sol";
  * This contract uses the Optimism L2-to-L2 cross-domain messenger for cross-chain communication.
  * @notice
  */
-contract DeploymentFactory {
+contract CrossChainDeploymentFactory {
     using CrossChainUtils for *;
     using Common for *;
 
