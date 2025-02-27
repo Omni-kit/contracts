@@ -6,7 +6,7 @@ import {CrossChainUtils} from "./library/CrossChainUtils.sol";
 import {Common} from "./library/Common.sol";
 
 /**
- * @title DeploymentFactory
+ * @title CrossChainDeploymentFactory
  * @dev A factory contract for deploying contracts on the current chain and sending cross-chain messages to deploy the contract on other chains.
  * This contract uses the Optimism L2-to-L2 cross-domain messenger for cross-chain communication.
  * @notice

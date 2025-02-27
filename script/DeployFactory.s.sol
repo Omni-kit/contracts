@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
-import "../src/DeploymentFactory.sol";
+import "../src/CrossChainDeploymentFactory.sol";
 
 struct ChainConfig {
     uint256 chainId;
@@ -10,8 +10,8 @@ struct ChainConfig {
 }
 
 contract DeployFactory is Script {
-    DeploymentFactory factory1;
-    DeploymentFactory factory2;
+    CrossChainDeploymentFactory factory1;
+    CrossChainDeploymentFactory factory2;
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -34,7 +34,9 @@ contract DeployFactory is Script {
         vm.selectFork(fork1);
         vm.startBroadcast(deployerPrivateKey);
 
-        factory1 = new DeploymentFactory{salt: "DeploymentFactory"}();
+        factory1 = new CrossChainDeploymentFactory{
+            salt: "CrossChainDeploymentFactory"
+        }();
         factoryAddresses[0] = address(factory1);
         vm.stopBroadcast();
         console.log("Factory on OPChainA:", factoryAddresses[0]);
@@ -43,7 +45,9 @@ contract DeployFactory is Script {
         vm.selectFork(fork2);
         vm.startBroadcast(deployerPrivateKey);
 
-        factory2 = new DeploymentFactory{salt: "DeploymentFactory"}();
+        factory2 = new CrossChainDeploymentFactory{
+            salt: "CrossChainDeploymentFactory"
+        }();
         factoryAddresses[1] = address(factory2);
         vm.stopBroadcast();
         console.log("Factory on OPChainB:", factoryAddresses[1]);

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import "../src/DeploymentFactory.sol";
+import "../src/CrossChainDeploymentFactory.sol";
 import {IL2ToL2CrossDomainMessenger} from "optimism-contracts/interfaces/L2/IL2ToL2CrossDomainMessenger.sol";
 import {Predeploys} from "optimism-contracts/src/libraries/Predeploys.sol";
 
@@ -15,18 +15,18 @@ contract TestToken is ERC20 {
 }
 
 /**
- * @title DeploymentFactoryTest
- * @dev Test suite for the DeploymentFactory contract, focusing on deployment, cross-chain messaging,
+ * @title CrossChainDeploymentFactoryTest
+ * @dev Test suite for the CrossChainDeploymentFactory contract, focusing on deployment, cross-chain messaging,
  * access control, and edge cases.
  */
-contract DeploymentFactoryTest is Test {
+contract CrossChainDeploymentFactoryTest is Test {
     error CallerNotL2ToL2CrossDomainMessenger();
     error InvalidCrossDomainSender();
 
     uint256 forkA;
     uint256 forkB;
-    DeploymentFactory factory901;
-    DeploymentFactory factory902;
+    CrossChainDeploymentFactory factory901;
+    CrossChainDeploymentFactory factory902;
     address expectedAddress;
     address factoryAddress;
     bytes tokenBytecode;
@@ -52,12 +52,16 @@ contract DeploymentFactoryTest is Test {
 
         // Deploy factory on chain A
         vm.selectFork(forkA);
-        factory901 = new DeploymentFactory{salt: "DeploymentFactoryy"}();
+        factory901 = new CrossChainDeploymentFactory{
+            salt: "CrossChainDeploymentFactory"
+        }();
         factoryAddress = address(factory901);
 
         // Deploy factory on chain B
         vm.selectFork(forkB);
-        factory902 = new DeploymentFactory{salt: "DeploymentFactoryy"}();
+        factory902 = new CrossChainDeploymentFactory{
+            salt: "CrossChainDeploymentFactory"
+        }();
         assertEq(
             address(factory902),
             factoryAddress,
