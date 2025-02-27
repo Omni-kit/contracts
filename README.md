@@ -11,7 +11,7 @@ This project abstracts cross-chain features and leverages Superchain capabilitie
 - **Cross-Chain Communication**: Execute function calls on destination chains at the time of relay.
 - **Abstracted Deployment**: Utilize the provided npm package to deploy contracts on multiple chains with minimal hassle.
 
-### Prerequisites for Superchain Cross-Chain Features
+## Prerequisites for Superchain Cross-Chain Features
 
 - **Exclusive to Superchain:** These features are only available for the Superchain network.
 - **Uniform Deployment:** Your contract must be deployed at the same address on every chain.
