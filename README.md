@@ -11,6 +11,12 @@ This project abstracts cross-chain features and leverages Superchain capabilitie
 - **Cross-Chain Communication**: Execute function calls on destination chains at the time of relay.
 - **Abstracted Deployment**: Utilize the provided npm package to deploy contracts on multiple chains with minimal hassle.
 
+### Prerequisites for Superchain Cross-Chain Features
+
+- **Exclusive to Superchain:** These features are only available for the Superchain network.
+- **Uniform Deployment:** Your contract must be deployed at the same address on every chain.
+- **Automated Handling:** Use our npm package (`@omni-kit/omni-deployer`) to automatically manage uniform deployment across all specified Superchains.
+
 ## Contracts
 
 ### 1. DeploymentFactory
@@ -166,10 +172,8 @@ syncStates(encodedCall, targetChainIds);
 3. **Sync contract state across chains** using `CrossChainStateSync`.
 4. **Utilize the `CrossChainUtils` library** in your custom smart contracts to enable comprehensive cross-chain functionality.
 
-## Installation
+## Want to See More Examples?  
+
+Curious to see how this package works in action? We've put together detailed examples to help you get started quickly. Check them out here: **[Example Repository](https://github.com/Omni-kit/omnikit-examples)** 🚀  
 
 
-
-## Conclusion
-
-This project simplifies cross-chain development by providing abstracted contracts and utility functions, making it easier to deploy and manage smart contracts across multiple chains using Superchain infrastructure.
