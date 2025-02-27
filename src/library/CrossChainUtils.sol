@@ -15,7 +15,7 @@ library CrossChainUtils {
         IL2ToL2CrossDomainMessenger(Common.L2_TO_L2_CROSS_DOMAIN_MESSENGER);
 
     /**
-     * @notice Sends a cross-chain message to deploy or interact with a contract on another chain.
+     * @notice Sends a cross-chain to interact with a contract on another chain.
      * @param _toChainId The destination chain ID.
      * @param _message The encoded message to send.
      */
@@ -55,6 +55,17 @@ library CrossChainUtils {
             _amount,
             _toChainId
         );
+    }
+
+    /**
+     * @notice Sends Native ETH via the SuperchainWETH.
+     * @param _to The recipient address on the destination chain.
+     * @param _toChainId The destination chain ID.
+     */
+    function sendETHViaBridge(address _to, uint256 _toChainId) internal {
+        ISuperchainWETH(payable(Common.SUPERCHAIN_WETH)).sendETH{
+            value: address(this).balance
+        }(_to, _toChainId);
     }
 
     /**
