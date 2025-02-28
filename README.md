@@ -41,6 +41,8 @@ function deployContract(
 
 **NPM Package:** [@omni-kit/omni-deployer](https://www.npmjs.com/package/@omni-kit/omni-deployer)
 
+---
+
 ### 2. CrossChainDisperse
 
 The `CrossChainDisperse` contract allows ERC20 token transfers to multiple recipients across chains. It uses the Superchain ecosystem for bridging tokens and sending cross-chain messages.
@@ -60,6 +62,8 @@ function transferERC20TokensToSingleChain(
 - Uses `ISuperchainERC20` for token transfers.
 - Sends messages for cross-chain execution.
 
+---
+
 ### 3. CrossChainStateSync
 
 The `CrossChainStateSync` contract ensures state consistency across multiple chains by leveraging Optimism's interoperability features.
@@ -75,6 +79,37 @@ function syncStates(
 
 - Syncs function calls across multiple chains.
 - Uses Optimism's `IL2ToL2CrossDomainMessenger` for communication.
+
+---
+
+### 4. Spoke
+
+The `Spoke` contract makes **cross-chain calls** to a "Hub" contract on another chain (specified by `HubChainId`). You can adapt the **Hub** contract to your own requirements (e.g., a contract with functions like `updateData`, `setNumber`, etc.).
+
+**Deployment at the Same Address:**  
+To ensure reliable cross-chain messaging, both **Spoke** and **Hub** contracts should be deployed at the **same address** on their respective chains. This can be achieved using:
+
+- **`CREATE3`** deployment, or
+- **[@omni-kit/omni-deployer](https://www.npmjs.com/package/@omni-kit/omni-deployer)** (deploy on multiple chains with a single command).
+
+#### Key Function:
+
+```solidity
+function callAnyHubFunction(bytes memory hubCallData) external;
+```
+
+- Takes **ABI-encoded** function data (`hubCallData`) for the Hub contract.
+- Uses `CrossChainUtils._sendCrossChainMessage` to relay the call to `HubChainId`.
+- Example: If your Hub has `updateData(uint256)`, encode it as:
+  ```solidity
+  bytes memory hubCallData = abi.encodeWithSignature(
+      "updateData(uint256)",
+      42
+  );
+  ```
+  Then call `callAnyHubFunction(hubCallData)` on the Spoke contract.
+
+---
 
 ## Library: CrossChainUtils
 
@@ -174,7 +209,7 @@ syncStates(encodedCall, targetChainIds);
 
 ---
 
-## **📌 Getting Started**  
+## **📌 Getting Started**
 
 ### 🛠 **Setup in Foundry**
 
